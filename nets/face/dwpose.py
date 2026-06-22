@@ -1,0 +1,2 @@
+class DWPoseEstimator:
+    pass

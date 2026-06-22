@@ -1,0 +1,2 @@
+class StableDiffusionVAE:
+    pass

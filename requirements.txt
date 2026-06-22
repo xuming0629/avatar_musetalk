@@ -1,0 +1,8 @@
+fastapi
+uvicorn
+pydantic
+pyyaml
+numpy
+opencv-python
+soundfile
+python-multipart

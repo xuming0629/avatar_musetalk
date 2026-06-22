@@ -1,0 +1,54 @@
+
+
+runtime:
+  device: cpu
+
+
+models:
+  resnet18:
+    path: models/resnet18/resnet18-5c106cde.pth
+  face-parse-bisent:
+    path: models/face-parse-bisent/79999_iter.pth
+    num_classes: 19
+  s3fd:
+    path: models/s3fd/s3fd-619a316812.pth
+
+
+  # musetalk:
+  #   version: v1.5
+  #   root: models/musetalk-v1.5
+  #   unet: models/musetalk-v1.5/unet.pth
+  #   config: models/musetalk-v1.5/musetalk.json
+  # whisper:
+  #   root: models/whisper
+  # vae:
+  #   root: models/sd-vae-ft-mse
+  # face_parse:
+  #   root: models/face-parse-bisent
+
+
+
+# preprocess:
+#   image_size: 256
+#   bbox_shift: 0
+#   face_det_batch_size: 16
+#   audio_feat_batch_size: 8
+
+# postprocess:
+#   paste_back: true
+#   enhance_face: false
+
+
+# project:
+#   name: Avatar
+#   version: 0.1.0
+
+# runtime:
+#   device: cuda
+#   fps: 25
+#   # use_mock: true
+
+# paths:
+#   model_root: models
+#   output_dir: assets/outputs
+#   temp_dir: assets/temp

@@ -1,0 +1,13 @@
+__pycache__/
+*.pyc
+*.log
+logs/
+outputs/
+assets/outputs/
+assets/temp/
+models/**/*.pth
+models/**/*.pt
+models/**/*.bin
+models/**/*.safetensors
+models/**/*.onnx
+.env
