@@ -7,8 +7,8 @@ import torch
 from PIL import Image
 import torchvision.transforms as transforms
 
-from nets.common.config import load_yaml, resolve_path, get_device
-from nets.face.parsing.face_parse_bisenet import BiSeNet
+from src.nets.common.config import load_yaml, resolve_path, get_device
+from src.nets.face.parsing.face_parse_bisenet import BiSeNet
 
 
 class FaceParsing:

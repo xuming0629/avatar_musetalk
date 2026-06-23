@@ -16,7 +16,7 @@ import torch.nn.functional as F
 import torchvision
 import os
 
-from nets.common.config import (
+from src.nets.common.config import (
     load_yaml,
     resolve_path,
     get_device,

@@ -12,13 +12,13 @@ from typing import Optional
 import torch
 from torch.utils.model_zoo import load_url
 
-from nets.common.config import (
+from src.nets.common.config import (
     load_yaml,
     resolve_path,
     get_device,
 )
 
-from nets.face.s3fd.face_detect import FaceDetector
+from src.nets.face.s3fd.face_detect import FaceDetector
 
 from .s3fd_net import s3fd
 from .bbox import *

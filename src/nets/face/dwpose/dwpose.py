@@ -20,7 +20,7 @@ import numpy as np
 import onnxruntime as ort
 
 
-from nets.common.config import (
+from src.nets.common.config import (
     load_yaml,
     get_device,
 )

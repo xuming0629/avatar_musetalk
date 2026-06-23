@@ -18,7 +18,7 @@ import cv2
 ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, ROOT_DIR)
 
-from nets.face.dwpose.dwpose import RTMPose
+from src.nets.face.dwpose.dwpose import RTMPose
 
 
 if __name__ == "__main__":

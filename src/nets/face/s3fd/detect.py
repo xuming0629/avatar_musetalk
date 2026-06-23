@@ -24,8 +24,8 @@ import numpy as np
 
 import scipy.io as sio
 import zipfile
-from  nets.face.s3fd.s3fd_net import s3fd
-from nets.face.s3fd.bbox import decode, batch_decode
+from  src.nets.face.s3fd.s3fd_net import s3fd
+from src.nets.face.s3fd.bbox import decode, batch_decode
 
 
 def detect(net, img, device):

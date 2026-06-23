@@ -7,10 +7,10 @@ import numpy as np
 import torch
 import tqdm
 
-from audio import SAMPLE_RATE, N_FRAMES, HOP_LENGTH, pad_or_trim, log_mel_spectrogram
-from decoding import DecodingOptions, DecodingResult
-from tokenizer import LANGUAGES, TO_LANGUAGE_CODE, get_tokenizer
-from utils import exact_div, format_timestamp, optional_int, optional_float, str2bool, write_txt, write_vtt, write_srt
+from src.nets.wisper.audio import SAMPLE_RATE, N_FRAMES, HOP_LENGTH, pad_or_trim, log_mel_spectrogram
+from src.nets.wisper.decoding import DecodingOptions, DecodingResult
+from src.nets.wisper.tokenizer import LANGUAGES, TO_LANGUAGE_CODE, get_tokenizer
+from src.nets.wisper.utils import exact_div, format_timestamp, optional_int, optional_float, str2bool, write_txt, write_vtt, write_srt
 
 if TYPE_CHECKING:
     from .model import Whisper
@@ -129,7 +129,7 @@ def transcribe(
 
 
 def cli():
-    from . import available_models
+    from ....nets.wisper import available_models
 
     parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser.add_argument("audio", nargs="+", type=str, help="audio file(s) to transcribe")
@@ -182,7 +182,7 @@ def cli():
     if threads > 0:
         torch.set_num_threads(threads)
 
-    from . import load_model
+    from ....nets.wisper import load_model
     model = load_model(model_name, device=device, download_root=model_dir)
 
     for audio_path in args.pop("audio"):
