@@ -74,7 +74,7 @@ class UNet:
         return torch.device("cpu")
 
 
-from src.nets.vae.vae import VAE
+from src.nets.musetalk.vae import VAE
 #if __name__ == "__main__":
 #    # 示例
 #    unet = UNet(
