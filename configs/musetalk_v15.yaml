@@ -12,6 +12,8 @@ models:
     num_classes: 19
   s3fd:
     path: models/s3fd/s3fd-619a316812.pth
+  dwpose:
+    path: models/dwpose/dw-ll_ucoco_384.onnx
 
 
   # musetalk:
