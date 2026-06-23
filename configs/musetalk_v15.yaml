@@ -20,7 +20,7 @@ models:
     version: v1.5
     path: models/musetalk-v1.5/unet.pth
     cfg: models/musetalk-v1.5/musetalk.json
-  # wisper:
+  wisper:
     path: models/whisper
 
 
