@@ -37,3 +37,15 @@
 - 不要直接把官方所有代码混进 app.py。
 - 不要把模型权重提交到 git。
 - 不要把 Web、TTS、LLM、Avatar 全塞一个文件。
+
+
+# TODO plan 
+
+1. 完成 nets 下的几个模型的类的实现
+    dwpose, s3fd, wisper, musetalk unet v1.5 face arsing, 
+2. 然后实现 app.py 实现过程中对，依赖的 utils 进行集成整理
+3. 完成 app.py 最基本的数据人测试
+4. 完成 LLM 大模型的底座能力
+5. 完成完成转语音的模块
+6. 完成语音转文字模块
+7. 完成标准的数字人商业完善， 
