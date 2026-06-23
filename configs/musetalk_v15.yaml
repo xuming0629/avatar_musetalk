@@ -15,17 +15,13 @@ models:
   dwpose:
     path: models/dwpose/dw-ll_ucoco_384.onnx
   sd-vae-ft-mse:
-    path: models/sd-vae-ft-mse    # 这个传入的是路径
+    path: models/sd-vae-ft-mse     # 这个传入的是路径
+  musetalk:
+    version: v1.5
+    path: models/musetalk-v1.5/unet.pth
+    cfg: models/musetalk-v1.5/musetalk.json
   # wisper:
-  #   path:
-  # musetalk:
+    path: models/whisper
 
 
-  # musetalk:
-  #   version: v1.5
-  #   root: models/musetalk-v1.5
-  #   unet: models/musetalk-v1.5/unet.pth
-  #   config: models/musetalk-v1.5/musetalk.json
-  # whisper:
-  #   root: models/whisper
 
