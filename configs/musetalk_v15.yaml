@@ -15,7 +15,7 @@ models:
   dwpose:
     path: models/dwpose/dw-ll_ucoco_384.onnx
   sd-vae-ft-mse:
-    path: models/sd-vae-ft-mse/diffusion_pytorch_model.bin
+    path: models/sd-vae-ft-mse    # 这个传入的是路径
   # wisper:
   #   path:
   # musetalk:
