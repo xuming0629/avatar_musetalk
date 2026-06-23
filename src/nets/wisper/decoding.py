@@ -1,3 +1,17 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+"""
+# @FileName      : decoding.py
+# @Time          : 2026-06-23 22:56:07
+# @Author        : XuMing
+# @Email         : 920972751@qq.com
+# @description   : TODO
+# @Company       : 2026 XuMing. All Rights Reserved.
+"""
+
+
+
+
 from dataclasses import dataclass, field
 from typing import Dict, List, Tuple, Iterable, Optional, Sequence, Union, TYPE_CHECKING
 

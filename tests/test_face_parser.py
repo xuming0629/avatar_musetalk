@@ -18,7 +18,7 @@ import cv2
 ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, ROOT_DIR)
 
-from nets.face.parsing.face_parser import FaceParsing
+from src.nets.face.parsing.face_parser import FaceParsing
 # from nets.face.parsing.FaceParsing import FaceParsing
 
 

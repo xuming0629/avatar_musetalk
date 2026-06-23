@@ -1,3 +1,17 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+"""
+# @FileName      : tokenizer.py
+# @Time          : 2026-06-23 22:55:44
+# @Author        : XuMing
+# @Email         : 920972751@qq.com
+# @description   : TODO
+# @Company       : 2026 XuMing. All Rights Reserved.
+"""
+
+
+
+
 import os
 from dataclasses import dataclass
 from functools import lru_cache

@@ -1,8 +1,8 @@
 from pathlib import Path
-from nets.avatar.base import AvatarRequest, AvatarResult
-from nets.avatar.mock_engine import MockAvatarEngine
-from nets.avatar.musetalk_engine import MuseTalkEngine
-from nets.common.media import ensure_dir
+from src.nets.avatar.base import AvatarRequest, AvatarResult
+from src.nets.avatar.mock_engine import MockAvatarEngine
+from src.nets.avatar.musetalk_engine import MuseTalkEngine
+from src.nets.common.media import ensure_dir
 
 
 class DigitalHumanPipeline:

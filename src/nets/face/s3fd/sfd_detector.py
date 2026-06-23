@@ -2,9 +2,15 @@
 # -*- coding: utf-8 -*-
 """
 # @FileName      : sfd_detector.py
+# @Time          : 2026-06-23 22:56:44
 # @Author        : XuMing
+# @Email         : 920972751@qq.com
 # @description   : S3FD face detector with config support
+# @Company       : 2026 XuMing. All Rights Reserved.
 """
+
+
+
 
 import os
 from typing import Optional

@@ -16,7 +16,7 @@ import cv2
 ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, ROOT_DIR)
 
-from nets.face.s3fd.sfd_detector import SFDDetector
+from src.nets.face.s3fd.sfd_detector import SFDDetector
 
 
 def clip_bbox(bbox, w, h):

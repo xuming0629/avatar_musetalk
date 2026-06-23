@@ -2,14 +2,12 @@
 # -*- coding: utf-8 -*-
 """
 # @FileName      : face_detect.py
-# @Time          : 2026-06-22 15:27:42
+# @Time          : 2026-06-23 22:57:24
 # @Author        : XuMing
-# @Email         : xuming09@inspur.com
-# @description   :
-# Copyright      : Shandong Inspur Software Co., Ltd. 灵犀有言
+# @Email         : 920972751@qq.com
+# @description   : TODO
+# @Company       : 2026 XuMing. All Rights Reserved.
 """
-
-
 
 import logging
 import glob

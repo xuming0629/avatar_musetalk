@@ -1,15 +1,13 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 """
-# @FileName      : net_s3fd.py
-# @Time          : 2026-06-22 15:24:00
+# @FileName      : s3fd_net.py
+# @Time          : 2026-06-23 22:57:08
 # @Author        : XuMing
-# @Email         : xuming09@inspur.com
-# @description   :
-# Copyright      : Shandong Inspur Software Co., Ltd. 灵犀有言
+# @Email         : 920972751@qq.com
+# @description   : TODO
+# @Company       : 2026 XuMing. All Rights Reserved.
 """
-
-
 
 import torch
 import torch.nn as nn

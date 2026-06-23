@@ -2,10 +2,15 @@
 # -*- coding: utf-8 -*-
 """
 # @FileName      : vae.py
-# @Time          : 2026-06-23
+# @Time          : 2026-06-23 22:56:18
 # @Author        : XuMing
-# @description   : VAE wrapper
+# @Email         : 920972751@qq.com
+# @description   : TODO
+# @Company       : 2026 XuMing. All Rights Reserved.
 """
+
+
+
 
 import os
 import sys

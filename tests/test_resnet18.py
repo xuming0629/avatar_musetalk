@@ -15,7 +15,7 @@ import sys
 ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, ROOT_DIR)
 
-from nets.face.parsing.resnet import Resnet18
+from src.nets.face.parsing.resnet import Resnet18
 import torch
 
 

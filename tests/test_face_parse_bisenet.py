@@ -16,7 +16,7 @@ ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, ROOT_DIR)
 
 
-from nets.face.parsing.face_parse_bisenet import BiSeNet
+from src.nets.face.parsing.face_parse_bisenet import BiSeNet
 import torch
 
 if __name__ == "__main__":

@@ -7,9 +7,9 @@ import sys
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
-from nets.common.config import load_config
-from nets.avatar.base import AvatarRequest
-from nets.avatar.musetalk_engine import MuseTalkEngine
+from src.nets.common.config import load_config
+from src.nets.avatar.base import AvatarRequest
+from src.nets.avatar.musetalk_engine import MuseTalkEngine
 
 
 def parse_args():

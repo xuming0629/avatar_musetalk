@@ -2,12 +2,13 @@
 # -*- coding: utf-8 -*-
 """
 # @FileName      : detect.py
-# @Time          : 2026-06-22 15:24:49
+# @Time          : 2026-06-23 22:57:49
 # @Author        : XuMing
-# @Email         : xuming09@inspur.com
-# @description   :
-# Copyright      : Shandong Inspur Software Co., Ltd. 灵犀有言
+# @Email         : 920972751@qq.com
+# @description   : TODO
+# @Company       : 2026 XuMing. All Rights Reserved.
 """
+
 
 
 import torch
