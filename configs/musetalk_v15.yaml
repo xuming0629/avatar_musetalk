@@ -21,7 +21,15 @@ models:
     path: models/musetalk-v1.5/unet.pth
     cfg: models/musetalk-v1.5/musetalk.json
   wisper:
-    path: models/whisper
+    path: models/whisper/tiny.pt
+    type: tiny
+    audio:
+      sample_rate: 16000
+      n_fft: 400
+      hop_length: 160
+      n_mels: 80
+      chunk_length: 30
+    mel_filters: models/whisper/mel_filters.npz
 
 
 

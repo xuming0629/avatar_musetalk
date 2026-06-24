@@ -1,16 +1,13 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 """
-# @FileName      : model.py
-# @Time          : 2026-06-23 22:55:58
+# @FileName      : wisper.py
+# @Time          : 2026-06-24 08:33:51
 # @Author        : XuMing
 # @Email         : 920972751@qq.com
 # @description   : TODO
 # @Company       : 2026 XuMing. All Rights Reserved.
 """
-
-
-
 
 from dataclasses import dataclass
 from typing import Dict
@@ -21,10 +18,6 @@ import torch
 import torch.nn.functional as F
 from torch import Tensor
 from torch import nn
-
-from src.nets.wisper.transcribe import transcribe as transcribe_function
-from src.nets.wisper.decoding import detect_language as detect_language_function, decode as decode_function
-
 
 @dataclass
 class ModelDimensions:
@@ -299,6 +292,4 @@ class Whisper(nn.Module):
         self.decoder.apply(install_hooks)
         return cache, hooks
 
-    detect_language = detect_language_function
-    transcribe = transcribe_function
-    decode = decode_function
+
