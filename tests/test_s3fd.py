@@ -39,9 +39,7 @@ if __name__ == "__main__":
 
     h, w = img.shape[:2]
 
-    detector = SFDDetector.from_config(
-        "configs/musetalk_v15.yaml",
-    )
+    detector = SFDDetector()
 
     bboxes = detector.detect_from_image(img_path)
 
@@ -103,3 +101,6 @@ if __name__ == "__main__":
     cv2.imwrite(largest_path, largest_roi)
 
     print("save largest roi:", largest_path)
+    
+    
+    
