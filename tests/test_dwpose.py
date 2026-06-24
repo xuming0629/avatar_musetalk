@@ -20,20 +20,25 @@ sys.path.insert(0, ROOT_DIR)
 
 from src.nets.face.dwpose.dwpose import RTMPose
 
-
 if __name__ == "__main__":
+    img_path = "./assets/3456.png"
 
-    net = RTMPose.from_config(
-        "configs/musetalk_v15.yaml"
-    )
+    rtmpose = RTMPose()
 
-    save_path = net.predict_and_visualize(
-        "assets/3456.png"
+    save_path = rtmpose.predict_and_visualize(
+        img_path=img_path,
+        out_bbox=None,
+        score_thr=0.3,
     )
 
     print(f"✅ 可视化结果已保存为: {save_path}")
 
     vis_img = cv2.imread(save_path)
-    cv2.imshow("Keypoints", vis_img)
+
+    cv2.imshow(
+        "Keypoints",
+        vis_img,
+    )
+
     cv2.waitKey(0)
     cv2.destroyAllWindows()

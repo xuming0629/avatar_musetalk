@@ -17,54 +17,20 @@ ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, ROOT_DIR)
 
 from src.nets.musetalk.vae import VAE
-
 if __name__ == "__main__":
+    vae = VAE()
 
-    vae = VAE.from_config(
-        "configs/musetalk_v15.yaml"
+    img_path = "./assets/3456.png"
+
+    latents = vae.get_latents_for_unet(
+        img_path,
+        
+        
     )
 
-    crop_imgs_path = "./results/sun001_crop/"
-    latents_out_path = "./results/latents/"
-
-    os.makedirs(
-        latents_out_path,
-        exist_ok=True
+    print(
+        "latents:",
+        latents.shape,
+        latents.dtype,
+        latents.device,
     )
-
-    files = os.listdir(
-        crop_imgs_path
-    )
-
-    files.sort()
-
-    files = [
-        file for file in files
-        if file.lower().endswith(".png")
-    ]
-
-    for file in files:
-        index = os.path.splitext(file)[0]
-
-        img_path = os.path.join(
-            crop_imgs_path,
-            file
-        )
-
-        latents = vae.get_latents_for_unet(
-            img_path
-        )
-
-        print(
-            img_path,
-            "latents",
-            latents.size()
-        )
-
-        # torch.save(
-        #     latents,
-        #     os.path.join(
-        #         latents_out_path,
-        #         index + ".pt"
-        #     )
-        # )

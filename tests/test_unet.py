@@ -20,10 +20,10 @@ sys.path.insert(0, ROOT_DIR)
 from src.nets.musetalk.unet import UNet
 
 if __name__ == "__main__":
-
-    unet = UNet.from_config(
-        "configs/musetalk_v15.yaml"
-    )
+    unet = UNet()
 
     print("UNet load success")
     print("device:", unet.device)
+    print("dtype:", unet.dtype)
+    print("model_path:", unet.model_path)
+    print("unet_config:", unet.unet_config)

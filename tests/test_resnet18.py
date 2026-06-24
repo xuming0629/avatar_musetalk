@@ -19,13 +19,9 @@ from src.nets.face.parsing.resnet import Resnet18
 import torch
 
 
-
-
 if __name__ == "__main__":
 
-    net = Resnet18.from_config(
-        "configs/musetalk_v15.yaml"
-    )
+    net = Resnet18()
 
     x = torch.randn(
         1,
