@@ -20,32 +20,27 @@ sys.path.insert(0, ROOT_DIR)
 from src.nets.whisper.audio2feature import Audio2Feature
 
 if __name__ == "__main__":
+    audio_processor = Audio2Feature()
 
-    audio_processor = Audio2Feature.from_config(
-        "configs/musetalk_v15.yaml"
-    )
+    audio_path = "assets/test.mp3"
 
-    audio_path = "./assets/test.mp3"
-
-    array = audio_processor.audio2feat(
-        audio_path
+    feature = audio_processor.audio2feat(
+        audio_path,
     )
 
     print(
-        "audio feature:",
-        array.shape
+        "feature:",
+        feature.shape,
+        feature.dtype,
     )
 
-    fps = 25
-
     chunks = audio_processor.feature2chunks(
-        feature_array=array,
-        fps=fps,
-        audio_feat_length=[2, 2],
+        feature,
+        fps=25,
     )
 
     print(
         "chunks:",
         len(chunks),
-        chunks[0].shape
+        chunks[0].shape if len(chunks) > 0 else None,
     )
