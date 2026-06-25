@@ -46,14 +46,18 @@ from src.nets.face.parsing.face_parser import FaceParsing
 #     segmap = fp('./assets/face_0.png')
 #     segmap.save('./assets/outputs/res.png')
 
+
 if __name__ == "__main__":
     fp = FaceParsing(
         config_path="configs/musetalk_v15.yaml",
+        left_cheek_width=80,
+        right_cheek_width=80,
     )
 
     save_path = fp.save(
         image="./assets/face_0.png",
-        save_path="./assets/outputs/res.png"
+        save_path="./assets/outputs/res.png",
+        mode="jaw",
     )
 
     print(f"[FaceParsing] save: {save_path}")

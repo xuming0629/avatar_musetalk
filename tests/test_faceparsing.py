@@ -24,10 +24,26 @@ import numpy as np
 from src.nets.face.parsing.face_parser import FaceParsing
 
 
+
 if __name__ == "__main__":
-    fp = FaceParsing()
-    segmap = fp('./assets/face_0.png')
-    segmap.save('./assets/outputs/res.png')
+    fp = FaceParsing(
+        left_cheek_width=80,
+        right_cheek_width=80,
+    )
+
+    segmap = fp(
+        "./assets/face_0.png",
+        mode="jaw",
+    )
+
+    os.makedirs(
+        "./assets/outputs",
+        exist_ok=True,
+    )
+
+    segmap.save(
+        "./assets/outputs/res.png"
+    )
 
 
 

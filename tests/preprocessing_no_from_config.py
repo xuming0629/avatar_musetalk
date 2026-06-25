@@ -1,3 +1,15 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+"""
+# @FileName      : preprocessing.py
+# @description   : DWPose + S3FD/FaceAlignment 人脸 bbox 提取
+#
+# 说明：
+# - 不使用 from_config()
+# - 全局 get_landmark_and_bbox() 会自动创建 RTMPose() + FaceAlignment()
+# - 兼容原 MuseTalk 调用方式：
+#       from src.utils.preprocessing import get_landmark_and_bbox, get_bbox_range, coord_placeholder
+"""
 
 import os
 import pickle

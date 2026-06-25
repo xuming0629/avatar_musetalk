@@ -22,7 +22,7 @@ from src.nets.whisper.audio2feature import Audio2Feature
 if __name__ == "__main__":
     audio_processor = Audio2Feature()
 
-    audio_path = "assets/test.mp3"
+    audio_path = "assets/data/audio/sun.wav"
 
     feature = audio_processor.audio2feat(
         audio_path,
