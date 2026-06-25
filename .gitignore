@@ -11,3 +11,6 @@ models/**/*.bin
 models/**/*.safetensors
 models/**/*.onnx
 .env
+rsults/
+rsult/
+results/
