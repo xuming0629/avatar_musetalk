@@ -8,27 +8,7 @@ from einops import rearrange
 import shutil
 import os.path as osp
 
-from musetalk.models.vae import VAE
-from musetalk.models.unet import UNet,PositionalEncoding
 
-
-def load_all_model(
-    unet_model_path=os.path.join("models", "musetalkV15", "unet.pth"),
-    vae_type="sd-vae",
-    unet_config=os.path.join("models", "musetalkV15", "musetalk.json"),
-    device=None,
-):
-    vae = VAE(
-        model_path = os.path.join("models", vae_type),
-    )
-    print(f"load unet model from {unet_model_path}")
-    unet = UNet(
-        unet_config=unet_config,
-        model_path=unet_model_path,
-        device=device
-    )
-    pe = PositionalEncoding(d_model=384)
-    return vae, unet, pe
 
 def get_file_type(video_path):
     _, ext = os.path.splitext(video_path)
