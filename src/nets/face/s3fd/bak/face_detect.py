@@ -1,12 +1,12 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 """
-# @FileName      : face_detect.py
-# @Time          : 2026-06-23 22:57:24
-# @Author        : XuMing
-# @Email         : 920972751@qq.com
-# @description   : 人脸检测器抽象基类
-# @Company       : 2026 XuMing. All Rights Reserved.
+人脸检测器基类。
+
+说明：
+- 保持原接口不变；
+- 支持图片路径、numpy.ndarray、torch.Tensor 输入；
+- SFDDetector 内部会显式传 rgb=False，让 S3FD 使用 BGR 输入。
 """
 
 import glob
@@ -19,11 +19,6 @@ from tqdm import tqdm
 
 
 class FaceDetector(object):
-    """人脸检测器基类。
-
-    子类需要实现 detect_from_image，并返回检测框列表。
-    """
-
     def __init__(self, device, verbose):
         self.device = device
         self.verbose = verbose
@@ -31,20 +26,19 @@ class FaceDetector(object):
         device_str = str(device)
 
         if verbose and "cpu" in device_str:
-            logging.getLogger(__name__).warning(
-                "Detection running on CPU, this may be potentially slow."
-            )
+            logger = logging.getLogger(__name__)
+            logger.warning("Detection running on CPU, this may be potentially slow.")
 
         if "cpu" not in device_str and "cuda" not in device_str:
             if verbose:
-                logging.getLogger(__name__).error(
+                logger = logging.getLogger(__name__)
+                logger.error(
                     "Expected values for device are: {cpu, cuda} but got: %s",
                     device_str,
                 )
             raise ValueError
 
     def detect_from_image(self, tensor_or_path):
-        """检测单张图片中的人脸。"""
         raise NotImplementedError
 
     def detect_from_directory(
@@ -54,23 +48,28 @@ class FaceDetector(object):
         recursive=False,
         show_progress_bar=True,
     ):
-        """检测目录中的图片。"""
+        """
+        对目录内图片进行批量人脸检测。
+        """
         logger = logging.getLogger(__name__) if self.verbose else None
 
         if len(extensions) == 0:
             if self.verbose:
-                logger.error("Expected at list one extension, but none was received.")
+                logger.error("Expected at least one extension, but none was received.")
             raise ValueError
 
         if self.verbose:
             logger.info("Constructing the list of images.")
 
         additional_pattern = "/**/*" if recursive else "/*"
-        files = []
 
+        files = []
         for extension in extensions:
             files.extend(
-                glob.glob(path + additional_pattern + extension, recursive=recursive)
+                glob.glob(
+                    path + additional_pattern + extension,
+                    recursive=recursive,
+                )
             )
 
         if self.verbose:
@@ -78,9 +77,11 @@ class FaceDetector(object):
             logger.info("Preparing to run the detection.")
 
         predictions = {}
+
         for image_path in tqdm(files, disable=not show_progress_bar):
             if self.verbose:
                 logger.info("Running the face detector on image: %s", image_path)
+
             predictions[image_path] = self.detect_from_image(image_path)
 
         if self.verbose:
@@ -102,29 +103,35 @@ class FaceDetector(object):
 
     @staticmethod
     def tensor_or_path_to_ndarray(tensor_or_path, rgb=True):
-        """将路径、torch.Tensor 或 numpy.ndarray 转为 numpy.ndarray。
+        """
+        将输入统一转成 numpy.ndarray。
 
-        参数:
+        Args:
             tensor_or_path:
-                图片路径、图片数组或 Tensor。
+                - str: 图片路径；
+                - np.ndarray: 图片数组；
+                - torch.Tensor: 图片 Tensor。
             rgb:
-                保持原接口默认值。True 时将 cv2 读取的 BGR 转为 RGB；
-                False 时保留 BGR。
+                - True: 返回 RGB；
+                - False: 返回 BGR。
 
-        返回:
-            numpy.ndarray 图片数组。
+        注意：
+            cv2.imread 默认读出来是 BGR。
+            S3FD 使用 BGR 均值 [104, 117, 123]，所以 SFDDetector 会传 rgb=False。
         """
         if isinstance(tensor_or_path, str):
             img = cv2.imread(tensor_or_path)
+
             if img is None:
                 raise FileNotFoundError(f"Image not found or unreadable: {tensor_or_path}")
-            return img if not rgb else img[..., ::-1]
+
+            return img[..., ::-1].copy() if rgb else img
 
         if torch.is_tensor(tensor_or_path):
             arr = tensor_or_path.detach().cpu().numpy()
-            return arr[..., ::-1].copy() if not rgb else arr
+            return arr if rgb else arr[..., ::-1].copy()
 
         if isinstance(tensor_or_path, np.ndarray):
-            return tensor_or_path[..., ::-1].copy() if not rgb else tensor_or_path
+            return tensor_or_path if rgb else tensor_or_path[..., ::-1].copy()
 
         raise TypeError(f"Unsupported input type: {type(tensor_or_path)}")

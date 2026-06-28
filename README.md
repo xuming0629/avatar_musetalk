@@ -39,7 +39,17 @@ conda activate xavatar
 pip install -r requirements.txt
 python app.py
 ```
+sudo apt-get update
+sudo apt-get install -y ffmpeg libavdevice-dev libavfilter-dev libopus-dev libvpx-dev libsrtp2-dev
+sudo apt-get update
 
+sudo apt-get install -y \
+  ffmpeg \
+  libavdevice-dev \
+  libavfilter-dev \
+  libopus-dev \
+  libvpx-dev \
+  libsrtp2-dev
 访问：
 
 ```text

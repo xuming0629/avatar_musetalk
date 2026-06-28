@@ -19,6 +19,52 @@ import torch.nn.functional as F
 from torch import Tensor
 from torch import nn
 
+
+class CudnnGuard:
+    """
+    CUDA forward 保护器。
+
+    说明:
+        - CPU 时不做任何修改；
+        - CUDA 时仍然走 GPU，不会回退 CPU；
+        - 仅在当前 forward 范围内临时关闭 cuDNN；
+        - 退出时恢复原来的 cuDNN 设置。
+    """
+
+    def __init__(self, enabled: bool):
+        self.enabled = bool(enabled)
+        self.old_cudnn_enabled = None
+        self.old_cudnn_benchmark = None
+        self.old_cudnn_deterministic = None
+
+    def __enter__(self):
+        if not self.enabled:
+            return self
+
+        self.old_cudnn_enabled = torch.backends.cudnn.enabled
+        self.old_cudnn_benchmark = torch.backends.cudnn.benchmark
+        self.old_cudnn_deterministic = torch.backends.cudnn.deterministic
+
+        torch.backends.cudnn.enabled = False
+        torch.backends.cudnn.benchmark = False
+        torch.backends.cudnn.deterministic = False
+        torch.cuda.synchronize()
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        if not self.enabled:
+            return False
+
+        try:
+            torch.cuda.synchronize()
+        finally:
+            torch.backends.cudnn.enabled = self.old_cudnn_enabled
+            torch.backends.cudnn.benchmark = self.old_cudnn_benchmark
+            torch.backends.cudnn.deterministic = self.old_cudnn_deterministic
+
+        return False
+
+
 @dataclass
 class ModelDimensions:
     n_mels: int
@@ -154,27 +200,28 @@ class AudioEncoder(nn.Module):
         include_embeddings: bool
             whether to include intermediate steps in the output
         """
-        x = F.gelu(self.conv1(x))
-        x = F.gelu(self.conv2(x))
-        x = x.permute(0, 2, 1)
+        with CudnnGuard(enabled=("cuda" in str(x.device))):
+            x = F.gelu(self.conv1(x))
+            x = F.gelu(self.conv2(x))
+            x = x.permute(0, 2, 1)
 
-        assert x.shape[1:] == self.positional_embedding.shape, "incorrect audio shape"
-        x = (x + self.positional_embedding).to(x.dtype)
+            assert x.shape[1:] == self.positional_embedding.shape, "incorrect audio shape"
+            x = (x + self.positional_embedding).to(x.dtype)
 
-        if include_embeddings:
-            embeddings = [x.cpu().detach().numpy()]
-
-        for block in self.blocks:
-            x = block(x)
             if include_embeddings:
-                embeddings.append(x.cpu().detach().numpy())
+                embeddings = [x.cpu().detach().numpy()]
 
-        x = self.ln_post(x)
+            for block in self.blocks:
+                x = block(x)
+                if include_embeddings:
+                    embeddings.append(x.cpu().detach().numpy())
 
-        if include_embeddings:
-            embeddings = np.stack(embeddings, axis=1)
-            return x, embeddings
-        else:
+            x = self.ln_post(x)
+
+            if include_embeddings:
+                embeddings = np.stack(embeddings, axis=1)
+                return x, embeddings
+
             return x
 
 
@@ -202,25 +249,26 @@ class TextDecoder(nn.Module):
         include_embeddings : bool
             Whether to include intermediate values in the output to this function
         """
-        offset = next(iter(kv_cache.values())).shape[1] if kv_cache else 0
-        x = self.token_embedding(x) + self.positional_embedding[offset : offset + x.shape[-1]]
-        x = x.to(xa.dtype)
+        with CudnnGuard(enabled=("cuda" in str(xa.device))):
+            offset = next(iter(kv_cache.values())).shape[1] if kv_cache else 0
+            x = self.token_embedding(x) + self.positional_embedding[offset : offset + x.shape[-1]]
+            x = x.to(xa.dtype)
 
-        if include_embeddings:
-            embeddings = [x.cpu().detach().numpy()]
-
-        for block in self.blocks:
-            x = block(x, xa, mask=self.mask, kv_cache=kv_cache)
             if include_embeddings:
-                embeddings.append(x.cpu().detach().numpy())
+                embeddings = [x.cpu().detach().numpy()]
 
-        x = self.ln(x)
-        logits = (x @ torch.transpose(self.token_embedding.weight.to(x.dtype), 0, 1)).float()
+            for block in self.blocks:
+                x = block(x, xa, mask=self.mask, kv_cache=kv_cache)
+                if include_embeddings:
+                    embeddings.append(x.cpu().detach().numpy())
 
-        if include_embeddings:
-            embeddings = np.stack(embeddings, axis=1)
-            return logits, embeddings
-        else:
+            x = self.ln(x)
+            logits = (x @ torch.transpose(self.token_embedding.weight.to(x.dtype), 0, 1)).float()
+
+            if include_embeddings:
+                embeddings = np.stack(embeddings, axis=1)
+                return logits, embeddings
+
             return logits
 
 

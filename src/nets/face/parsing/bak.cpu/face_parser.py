@@ -369,42 +369,6 @@ class FaceParsing:
         parsing[parsing != 255] = 0
         return parsing
 
-    def _forward_without_cudnn(self, img):
-        """
-        执行 FaceParsing 前向推理。
-
-        说明：
-            1. CPU 模式保持原逻辑；
-            2. CUDA 模式仍然使用 GPU；
-            3. 仅在当前网络 forward 期间临时关闭 cuDNN，
-               避免部分 torch/cuDNN 环境下 Conv2d/BatchNorm 段错误；
-            4. forward 结束后恢复原始 cuDNN 设置，避免影响其它模型。
-        """
-        if "cuda" not in str(self.device):
-            with torch.no_grad():
-                return self.net(img)
-
-        old_cudnn_enabled = torch.backends.cudnn.enabled
-        old_cudnn_benchmark = torch.backends.cudnn.benchmark
-        old_cudnn_deterministic = torch.backends.cudnn.deterministic
-
-        try:
-            torch.backends.cudnn.enabled = False
-            torch.backends.cudnn.benchmark = False
-            torch.backends.cudnn.deterministic = False
-            torch.cuda.synchronize()
-
-            with torch.no_grad():
-                out = self.net(img)
-
-            torch.cuda.synchronize()
-            return out
-
-        finally:
-            torch.backends.cudnn.enabled = old_cudnn_enabled
-            torch.backends.cudnn.benchmark = old_cudnn_benchmark
-            torch.backends.cudnn.deterministic = old_cudnn_deterministic
-
     def __call__(
         self,
         image,
@@ -425,7 +389,7 @@ class FaceParsing:
                 0,
             ).to(self.device)
 
-            out = self._forward_without_cudnn(img)[0]
+            out = self.net(img)[0]
 
             parsing = (
                 out.squeeze(0)

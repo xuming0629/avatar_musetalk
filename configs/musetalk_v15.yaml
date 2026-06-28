@@ -1,7 +1,7 @@
 
 
 runtime:
-  device: cpu
+  device: cuda
 
 
 models:

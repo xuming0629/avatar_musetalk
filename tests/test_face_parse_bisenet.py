@@ -21,9 +21,7 @@ import torch
 
 if __name__ == "__main__":
 
-    net = BiSeNet.from_config(
-        "configs/musetalk_v15.yaml"
-    )
+    net = BiSeNet()
 
     net.eval()
 

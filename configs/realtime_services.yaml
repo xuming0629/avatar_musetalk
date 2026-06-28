@@ -1,0 +1,72 @@
+runtime:
+  device: cuda
+  dtype: float16
+
+avatar:
+  fps: 25
+  bbox_shift: 0
+  extra_margin: 10
+  parsing_mode: jaw
+  left_cheek_width: 90
+  right_cheek_width: 90
+
+tts:
+  provider: edgetts
+
+  edgetts:
+    out_dir: ./results/output/tts
+    voice: zh-CN-XiaoxiaoNeural
+    rate: +0%
+    volume: +0%
+    pitch: +0Hz
+    sample_rate: 16000
+
+  dummy:
+    out_dir: ./results/output/tts
+    seconds: 3.0
+    sample_rate: 16000
+
+  edgetts:
+    voice: zh-CN-XiaoxiaoNeural
+    rate: "+0%"
+    volume: "+0%"
+    pitch: "+0Hz"
+    sample_rate: 16000
+
+asr:
+  provider: musetalk_whisper
+
+  musetalk_whisper:
+    config_path: configs/musetalk_v15.yaml
+    device: ""
+
+llm:
+  provider: kimi
+
+  kimi:
+    base_url: https://api.moonshot.cn/v1
+    model: kimi-k2.6
+
+    # 推荐使用环境变量，不要把 key 写死到配置文件
+    api_key_env: MOONSHOT_API_KEY
+
+    # 如果你只是本地临时测试，也可以填 api_key
+    # 但不推荐长期这么做
+    api_key: "sk-RyJyKss79JLZhPRmrhoPCMr1oP13OnifaRYPTJHSckAl6oqd"
+
+    temperature: 1.0
+    top_p: 0.9
+    max_tokens: 512
+    timeout: 60
+    max_history_turns: 5
+
+    system_prompt: 你是 Kimi，由 Moonshot AI 提供的人工智能助手，你更擅长中文和英文的对话。你会为用户提供安全，有帮助，准确的回答。回答适合直接转成语音播报，不要使用 Markdown。
+
+stream:
+  websocket:
+    host: 0.0.0.0
+    port: 8000
+
+gradio:
+  server_name: 0.0.0.0
+  server_port: 7860

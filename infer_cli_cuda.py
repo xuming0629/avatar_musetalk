@@ -38,7 +38,7 @@ from src.utils.preprocessing import (
 from src.nets.face.parsing.face_parser import FaceParsing
 from src.nets.face.dwpose.dwpose import RTMPose
 from src.nets.face.s3fd.sfd_detector import SFDDetector
-from src.nets.musetalk.vae import VAE
+from bak.vae import VAE
 from src.nets.musetalk.unet import UNet, PositionalEncoding
 from src.nets.face.alignment.face_alignment import FaceAlignment
 from src.nets.whisper.audio2feature import Audio2Feature
@@ -49,7 +49,8 @@ from src.nets.whisper.audio2feature import Audio2Feature
 # ============================================================
 
 DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-WEIGHT_DTYPE = torch.float16 if torch.cuda.is_available() else torch.float32
+# 先给一个默认值，模型加载完成后会用 UNet 实际权重 dtype 覆盖。
+WEIGHT_DTYPE = torch.float32
 
 # MuseTalk / Diffusion 推理一般使用 t=0
 
@@ -76,6 +77,11 @@ vae = VAE()
 unet = UNet()
 pe = PositionalEncoding(d_model=384)
 
+# 以 UNet 实际权重 dtype 为准，避免 Half 输入 + Float 权重导致 mat1/mat2 dtype mismatch。
+WEIGHT_DTYPE = next(unet.model.parameters()).dtype
+pe = pe.to(device=DEVICE, dtype=WEIGHT_DTYPE)
+pe.eval()
+
 fa = FaceAlignment()
 fp = FaceParsing()
 # dwpose = RTMPose()
@@ -84,6 +90,7 @@ fp = FaceParsing()
 audio_processor = Audio2Feature()
 
 print("========== Models loaded ==========")
+print("unet dtype:", WEIGHT_DTYPE)
 
 
 # ============================================================
@@ -385,6 +392,43 @@ def prepare_face_latents(
     return valid_coord_list, valid_frame_list, latent_list
 
 
+
+def run_cuda_forward_without_cudnn(fn):
+    """
+    CUDA forward 保护器。
+
+    说明:
+        - CPU 时保持原逻辑；
+        - CUDA 时仍然走 GPU，不会回退 CPU；
+        - 仅在当前 forward 范围内临时关闭 cuDNN；
+        - 退出时恢复原来的 cuDNN 设置。
+    """
+    if "cuda" not in str(DEVICE):
+        with torch.inference_mode():
+            return fn()
+
+    old_cudnn_enabled = torch.backends.cudnn.enabled
+    old_cudnn_benchmark = torch.backends.cudnn.benchmark
+    old_cudnn_deterministic = torch.backends.cudnn.deterministic
+
+    try:
+        torch.backends.cudnn.enabled = False
+        torch.backends.cudnn.benchmark = False
+        torch.backends.cudnn.deterministic = False
+        torch.cuda.synchronize()
+
+        with torch.inference_mode():
+            result = fn()
+
+        torch.cuda.synchronize()
+        return result
+
+    finally:
+        torch.backends.cudnn.enabled = old_cudnn_enabled
+        torch.backends.cudnn.benchmark = old_cudnn_benchmark
+        torch.backends.cudnn.deterministic = old_cudnn_deterministic
+
+
 # ============================================================
 # 核心推理
 # ============================================================
@@ -497,11 +541,14 @@ def run_musetalk_inference(
                 dtype=torch.long,
             )
 
-            pred_latents = unet.model(
-                latent_batch,
-                cur_timesteps,
-                encoder_hidden_states=audio_feature_batch,
-            ).sample
+            def _forward_unet():
+                return unet.model(
+                    latent_batch,
+                    cur_timesteps,
+                    encoder_hidden_states=audio_feature_batch,
+                ).sample
+
+            pred_latents = run_cuda_forward_without_cudnn(_forward_unet)
 
             recon = vae.decode_latents(pred_latents)
 

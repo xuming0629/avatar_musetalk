@@ -353,42 +353,6 @@ class VAE:
 
         return x
 
-
-    def _run_without_cudnn(self, fn):
-        """
-        VAE CUDA 推理专用封装。
-
-        说明:
-            - CPU 时保持原逻辑；
-            - CUDA 时仍然走 GPU，不会回退到 CPU；
-            - 仅在 VAE encode/decode forward 期间临时关闭 cuDNN；
-            - forward 结束后恢复原来的 cuDNN 设置，避免影响其他模型。
-        """
-        if "cuda" not in str(self.device):
-            with torch.inference_mode():
-                return fn()
-
-        old_cudnn_enabled = torch.backends.cudnn.enabled
-        old_cudnn_benchmark = torch.backends.cudnn.benchmark
-        old_cudnn_deterministic = torch.backends.cudnn.deterministic
-
-        try:
-            torch.backends.cudnn.enabled = False
-            torch.backends.cudnn.benchmark = False
-            torch.backends.cudnn.deterministic = False
-            torch.cuda.synchronize()
-
-            with torch.inference_mode():
-                result = fn()
-
-            torch.cuda.synchronize()
-            return result
-
-        finally:
-            torch.backends.cudnn.enabled = old_cudnn_enabled
-            torch.backends.cudnn.benchmark = old_cudnn_benchmark
-            torch.backends.cudnn.deterministic = old_cudnn_deterministic
-
     def encode_latents(
         self,
         image: torch.Tensor,
@@ -403,20 +367,18 @@ class VAE:
             latents: [B, 4, H/8, W/8]
         """
 
-        def _encode():
-            return self.vae.encode(
+        with torch.no_grad():
+            init_latent_dist = self.vae.encode(
                 image.to(
                     device=self.device,
                     dtype=self.vae.dtype,
                 )
             ).latent_dist
 
-        init_latent_dist = self._run_without_cudnn(_encode)
-
-        init_latents = (
-            self.scaling_factor
-            * init_latent_dist.sample()
-        )
+            init_latents = (
+                self.scaling_factor
+                * init_latent_dist.sample()
+            )
 
         return init_latents
 
@@ -434,19 +396,17 @@ class VAE:
             image: BGR uint8 ndarray, [B, H, W, 3]
         """
 
-        latents = (
-            1.0 / self.scaling_factor
-        ) * latents
+        with torch.no_grad():
+            latents = (
+                1.0 / self.scaling_factor
+            ) * latents
 
-        def _decode():
-            return self.vae.decode(
+            image = self.vae.decode(
                 latents.to(
                     device=self.device,
                     dtype=self.vae.dtype,
                 )
             ).sample
-
-        image = self._run_without_cudnn(_decode)
 
         image = (
             image / 2 + 0.5

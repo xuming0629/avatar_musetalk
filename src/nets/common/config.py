@@ -1,55 +1,73 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-"""
-# @FileName      : config.py
-# @Time          : 2026-06-22 14:04:41
-# @Author        : XuMing
-# @Email         : xuming09@inspur.com
-# @description   :
-# Copyright      : Shandong Inspur Software Co., Ltd. 灵犀有言
-"""
 
-
+from __future__ import annotations
 
 from pathlib import Path
-from typing import Optional, Any, Dict
+from typing import Any, Dict, Optional, Union
+
 import yaml
-import torch 
+import torch
 
 
-def get_device(config_path="configs/musetalk_v15.yaml"):
-    cfg = load_yaml(config_path)
-
-    device = cfg.get("runtime", {}).get("device", "cpu")
-
-    if device.startswith("cuda") and not torch.cuda.is_available():
-        print("[WARNING] CUDA not available, fallback to CPU")
-        device = "cpu"
-
-    return device
-
-def load_yaml(config_path: str) -> Dict[str, Any]:
+def load_yaml(config_path: Union[str, Path]) -> Dict[str, Any]:
     config_path = Path(config_path)
-    print(config_path)
+
+    print("[Config] load:", config_path)
+
     if not config_path.exists():
         raise FileNotFoundError(f"Config file not found: {config_path}")
 
     with open(config_path, "r", encoding="utf-8") as f:
-        return yaml.safe_load(f)
-    
-    
-def resolve_path(path: str, root_dir: Optional[str] = None) -> str:
-    """
-    支持相对路径和绝对路径。
-    相对路径默认基于工程根目录。
-    """
-    p = Path(path)
-    if p.is_absolute():
-        return str(p)
+        data = yaml.safe_load(f)
 
-    if root_dir is None:
-        root_dir = Path.cwd()
-    else:
-        root_dir = Path(root_dir)
+    return data or {}
 
-    return str((root_dir / p).resolve())
+
+def resolve_path(
+    path: Union[str, Path],
+    project_root: Optional[Union[str, Path]] = None,
+) -> str:
+    path = Path(path)
+
+    if path.is_absolute():
+        return str(path)
+
+    if project_root is not None:
+        return str(Path(project_root) / path)
+
+    return str(path)
+
+
+def normalize_device(device: Optional[Union[str, torch.device]] = None) -> torch.device:
+    """
+    统一处理 device：
+    - None -> 自动 cuda/cpu
+    - "cuda" / "cuda:0" -> CUDA 可用才使用，否则回退 CPU
+    - "cpu" -> CPU
+    """
+
+    if device is None:
+        device = "cuda" if torch.cuda.is_available() else "cpu"
+
+    device_str = str(device).strip().lower()
+
+    if device_str.startswith("cuda"):
+        if not torch.cuda.is_available():
+            print("[WARNING] CUDA not available, fallback to CPU")
+            return torch.device("cpu")
+
+        return torch.device(device_str)
+
+    if device_str == "cpu":
+        return torch.device("cpu")
+
+    raise ValueError(f"Unsupported device: {device}. Expected cpu/cuda/cuda:0")
+
+
+def get_device(config_path: str = "configs/musetalk_v15.yaml") -> torch.device:
+    cfg = load_yaml(config_path)
+
+    device = cfg.get("runtime", {}).get("device", None)
+
+    return normalize_device(device)

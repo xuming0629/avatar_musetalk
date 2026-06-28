@@ -149,6 +149,42 @@ class PositionalEncoding(nn.Module):
             pe,
         )
 
+
+    def _run_without_cudnn(self, fn):
+        """
+        UNet CUDA 推理专用封装。
+
+        说明:
+            - CPU 时保持原逻辑；
+            - CUDA 时仍然走 GPU，不会回退到 CPU；
+            - 仅在 UNet forward 期间临时关闭 cuDNN；
+            - forward 结束后恢复原来的 cuDNN 设置，避免影响其他模型。
+        """
+        if "cuda" not in str(self.device):
+            with torch.inference_mode():
+                return fn()
+
+        old_cudnn_enabled = torch.backends.cudnn.enabled
+        old_cudnn_benchmark = torch.backends.cudnn.benchmark
+        old_cudnn_deterministic = torch.backends.cudnn.deterministic
+
+        try:
+            torch.backends.cudnn.enabled = False
+            torch.backends.cudnn.benchmark = False
+            torch.backends.cudnn.deterministic = False
+            torch.cuda.synchronize()
+
+            with torch.inference_mode():
+                result = fn()
+
+            torch.cuda.synchronize()
+            return result
+
+        finally:
+            torch.backends.cudnn.enabled = old_cudnn_enabled
+            torch.backends.cudnn.benchmark = old_cudnn_benchmark
+            torch.backends.cudnn.deterministic = old_cudnn_deterministic
+
     def forward(
         self,
         x: torch.Tensor,
@@ -457,12 +493,14 @@ class UNet:
             whisper_batch,
         )
 
-        with torch.no_grad():
-            pred_latents = self.model(
+        def _forward_unet():
+            return self.model(
                 latent_batch,
                 timesteps,
                 encoder_hidden_states=audio_feature_batch,
             ).sample
+
+        pred_latents = self._run_without_cudnn(_forward_unet)
 
         return pred_latents
 
