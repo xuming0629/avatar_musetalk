@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import os
-from typing import Dict, List, Optional
+from typing import Dict, Iterator, List, Optional
 
 from openai import OpenAI
 
@@ -23,6 +23,24 @@ class BaseLLMService:
     ) -> str:
         raise NotImplementedError
 
+    def stream_chat(
+        self,
+        user_text: str,
+        history: Optional[List[Message]] = None,
+    ) -> Iterator[str]:
+        """流式返回 LLM 文本。
+
+        默认实现：兼容旧的非流式 LLM，直接一次性 yield chat() 结果。
+        具体服务可以覆盖这个方法，实现真正 token 级流式返回。
+        """
+        answer = self.chat(
+            user_text=user_text,
+            history=history,
+        )
+
+        if answer:
+            yield answer
+
 
 class EchoLLMService(BaseLLMService):
     """占位 LLM，用来跑通流程。"""
@@ -38,6 +56,20 @@ class EchoLLMService(BaseLLMService):
         if not user_text:
             return "我没有听清楚，请你再说一遍。"
         return f"我听到了：{user_text}"
+
+    def stream_chat(
+        self,
+        user_text: str,
+        history: Optional[List[Message]] = None,
+    ) -> Iterator[str]:
+        answer = self.chat(
+            user_text=user_text,
+            history=history,
+        )
+
+        # 模拟轻量流式，便于本地测试整条链路。
+        for ch in answer:
+            yield ch
 
 
 class KimiLLMService(BaseLLMService):
@@ -108,6 +140,51 @@ class KimiLLMService(BaseLLMService):
             return "我暂时没有想到合适的回答。"
 
         return str(answer).strip()
+
+    def stream_chat(
+        self,
+        user_text: str,
+        history: Optional[List[Message]] = None,
+    ) -> Iterator[str]:
+        """Kimi / Moonshot token 级流式返回。
+
+        注意：
+            这里只负责返回文本 token，不更新 history。
+            history 由上层 pipeline/server 在最终回答完成后统一更新。
+        """
+        user_text = (user_text or "").strip()
+
+        if not user_text:
+            yield "我没有听清楚，请你再说一遍。"
+            return
+
+        messages = self._build_messages(user_text, history)
+
+        completion = self.client.chat.completions.create(
+            model=self.model,
+            messages=messages,
+            temperature=1,
+            max_completion_tokens=self.max_tokens,
+            stream=True,
+        )
+
+        has_content = False
+
+        for chunk in completion:
+            if not chunk.choices:
+                continue
+
+            delta = chunk.choices[0].delta
+            content = getattr(delta, "content", None)
+
+            if not content:
+                continue
+
+            has_content = True
+            yield str(content)
+
+        if not has_content:
+            yield "我暂时没有想到合适的回答。"
 
     def _build_messages(
         self,

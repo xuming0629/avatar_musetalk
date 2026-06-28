@@ -58,10 +58,17 @@ class AvatarVideoTrack(VideoStreamTrack):
             except asyncio.QueueEmpty:
                 break
 
-    async def enqueue_frames(self, frames: List[np.ndarray]):
-        """一次性放入本轮回答的全部视频帧。"""
+    async def enqueue_frames(self, frames: List[np.ndarray], clear: bool = True):
+        """放入视频帧。
 
-        await self.clear()
+        Args:
+            frames: 待推送的视频帧列表。
+            clear: True 时先清空旧队列，兼容旧的一次性播放逻辑；
+                   False 时追加到队列，用于第三版流式推送。
+        """
+
+        if clear:
+            await self.clear()
 
         for frame in frames:
             frame = self._normalize_frame(frame)
@@ -73,6 +80,14 @@ class AvatarVideoTrack(VideoStreamTrack):
                     pass
 
             await self.queue.put(frame)
+
+    async def enqueue_frame(self, frame: np.ndarray):
+        """追加单帧视频，不清空旧队列，用于流式推送。"""
+
+        await self.enqueue_frames(
+            [frame],
+            clear=False,
+        )
 
     async def recv(self):
         await asyncio.sleep(1.0 / float(self.fps))
@@ -165,10 +180,17 @@ class AvatarAudioTrack(AudioStreamTrack):
             except asyncio.QueueEmpty:
                 break
 
-    async def enqueue_wav(self, wav_path: str):
-        """读取 wav，并切成 WebRTC 音频帧。"""
+    async def enqueue_wav(self, wav_path: str, clear: bool = True):
+        """读取 wav，并切成 WebRTC 音频帧。
 
-        await self.clear()
+        Args:
+            wav_path: wav 文件路径。
+            clear: True 时先清空旧队列，兼容旧逻辑；
+                   False 时追加音频帧，用于 LLM 分句 TTS 流式播报。
+        """
+
+        if clear:
+            await self.clear()
 
         pcm, sr = self._read_wav_mono_int16(wav_path)
 
@@ -192,6 +214,14 @@ class AvatarAudioTrack(AudioStreamTrack):
                     pass
 
             await self.queue.put(chunk)
+
+    async def enqueue_wav_append(self, wav_path: str):
+        """追加 wav 音频，不清空旧队列，用于分句流式播报。"""
+
+        await self.enqueue_wav(
+            wav_path,
+            clear=False,
+        )
 
     async def recv(self):
         await asyncio.sleep(self.frame_duration_ms / 1000.0)
